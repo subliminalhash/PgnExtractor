@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chess PGN Splitter</title>
+    <style>
+        #drop_zone {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #0088cc;
+            text-align: center;
+            padding: 50px;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="drop_zone">Drop PGN files here</div>
+<select id="downloadOption">
+    <option value="all">Download All</option>
+    <option value="individual">Only Individual Games</option>
+    <option value="html">Only HTML File</option>
+</select>
+
+<script>
+    function setupDragAndDrop() {
+        var dropZone = document.getElementById('drop_zone');
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var files = e.dataTransfer.files;
+            for (var i = 0; i < files.length; i++) {
+                processFile(files[i]);
+            }
+        });
+    }
+
+function processFile(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var contents = e.target.result;
+        var folderName = file.name.split('_')[2]; // Extract folder name from file name
+        var downloadOption = document.getElementById('downloadOption').value;
+        if (downloadOption === 'all' || downloadOption === 'individual') {
+            parseAndDownloadGames(contents, folderName);
+        }
+        if (downloadOption === 'all' || downloadOption === 'html') {
+            parseAndCreateHTML(contents, folderName);
+        }
+    };
+    reader.readAsText(file);
+}
+
+
+function parseAndDownloadGames(contents, folderName) {
+    var games = contents.split(/\n\n\n/);
+    games.forEach(function(game, index) {
+        if (game.trim() !== "") {
+            setTimeout(function() {
+                downloadGame(game, index, folderName);
+            }, index * 500);
+        }
+    });
+}
+
+
+function downloadGame(game, index, folderName) {
+    var filename = getFilenameFromPGN(game);
+
+    var blob = new Blob([game], {type: "text/plain"});
+    var link = document.createElement("a");
+    link.download = folderName + "/" + filename + ".txt"; // Include the folder in the filename
+    link.href = window.URL.createObjectURL(blob);
+    setTimeout(function() {
+        window.URL.revokeObjectURL(link.href);
+        link.remove();
+    }, 100);
+    document.body.appendChild(link);
+    link.click();
+}
+
+
+    function parseAndCreateHTML(contents) {
+        var games = contents.split(/\n\n\n/);
+        var links = [];
+        var eventName = "";
+
+        games.forEach(function(game) {
+            if (game.trim() !== "") {
+                var linkName = getFilenameFromPGN(game);
+                var siteUrl = game.match(/\[Site "([^"]+)"\]/)[1];
+
+                if (!eventName) {
+                    eventName = game.match(/\[Event "([^"]+)"\]/)[1];
+                    eventName = eventName.replace(/[^a-zA-Z0-9]+/g, '-');
+                }
+
+                links.push(`<a href="${siteUrl}" target="_blank">${linkName}</a><br>`);
+            }
+        });
+
+        setTimeout(function() {
+            downloadHTML(eventName, links.join(''));
+        }, games.length * 500); // Delay for HTML download
+    }
+
+    function downloadHTML(eventName, linksHTML) {
+        var htmlContent = `<!DOCTYPE html><html><head><title>${eventName}</title></head><body>${linksHTML}</body></html>`;
+        var blob = new Blob([htmlContent], {type: "text/html"});
+        var link = document.createElement("a");
+        link.download = `${eventName}.html`;
+        link.href = window.URL.createObjectURL(blob);
+        setTimeout(function() {
+            window.URL.revokeObjectURL(link.href);
+            link.remove();
+        }, 100);
+        document.body.appendChild(link);
+        link.click();
+    }
+
+    function getFilenameFromPGN(game) {
+        var white = game.match(/\[White "([^"]+)"\]/)[1];
+        var black = game.match(/\[Black "([^"]+)"\]/)[1];
+        var event = game.match(/\[Event "([^"]+)"\]/)[1];
+
+        // Remove whitespaces and special characters from the event name
+        event = event.replace(/[^a-zA-Z0-9]+/g, '');
+
+        return `W-${white}-B-${black}-${event}`;
+    }
+
+    setupDragAndDrop();
+</script>
+
+
+
+</body>
+</html>
