@@ -23,9 +23,12 @@
     <option value="html">Only HTML File</option>
 </select>
 
+<input type="file" id="file_input" style="display: none;" />
+
 <script>
     function setupDragAndDrop() {
         var dropZone = document.getElementById('drop_zone');
+        var fileInput = document.getElementById('file_input');
 
         dropZone.addEventListener('dragover', function(e) {
             e.preventDefault();
@@ -33,9 +36,17 @@
 
         dropZone.addEventListener('drop', function(e) {
             e.preventDefault();
-            var files = e.dataTransfer.files;
-            for (var i = 0; i < files.length; i++) {
-                processFile(files[i]);
+            var file = e.dataTransfer.files[0];
+            processFile(file);
+        });
+
+        dropZone.addEventListener('click', function() {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                processFile(this.files[0]);
             }
         });
     }
