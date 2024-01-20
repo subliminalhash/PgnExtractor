@@ -1,3 +1,37 @@
-.hello {
-  color: red;
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f3f3f3;
+}
+
+#drop_zone {
+    width: 400px;
+    height: 200px;
+    border: 4px dashed #007bff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease-in-out;
+}
+
+#drop_zone:hover {
+    border-color: #0056b3;
+}
+
+#drop_zone p {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+#drop_zone p .highlight {
+    color: #007bff;
 }
